@@ -8,20 +8,20 @@ yargs(hideBin(process.argv))
   .scriptName('')
   .command(
     'parse',
-    'Parse csv file into odoo format',
+    'Parse airbnb csv file into odoo format',
     {
       inputFile: {
         alias: 'i',
-        describe: '.csv file to parse',
+        describe: 'input .csv file to parse',
         demandOption: true,
-        default: '../output/input.csv',
+        default: './data/input/input.csv',
         type: 'string',
       },
-      outputFile: {
+      outputFolder: {
         alias: 'o',
-        describe: 'output file path',
-        demandOption: true,
-        default: '../output/output.csv',
+        describe: 'output folder path',
+        demandOption: false,
+        default: './data/output',
         type: 'string',
       },
     },
