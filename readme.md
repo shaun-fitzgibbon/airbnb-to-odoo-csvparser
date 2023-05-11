@@ -3,5 +3,7 @@
 Run Command
 
 ```sh
-shauncli parse -i ./data/input/input.csv -o ./data/output/
+
+pnpm ts-node ./src/cli.ts parse -i ./data/input/input.csv -o ./data/output/
+
 ```
