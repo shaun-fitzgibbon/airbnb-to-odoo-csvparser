@@ -2,7 +2,7 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
-import parse from './command/parse'
+import parse from './command/parse.js'
 
 yargs(hideBin(process.argv))
     .scriptName('')

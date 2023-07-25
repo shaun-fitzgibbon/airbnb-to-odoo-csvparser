@@ -1,4 +1,4 @@
-import { convertAirbnbCsvToOdooFormat } from '../lib/fastcsv'
+import { convertAirbnbCsvToOdooFormat } from '../lib/fastcsv.js'
 
 interface Arguments {
   inputFile: string
