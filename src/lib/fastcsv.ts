@@ -1,25 +1,37 @@
 import fs from "fs";
-import chalk from 'chalk';
+import chalk from "chalk";
 import { format as formatDate } from "date-fns";
 import * as csv from "fast-csv";
 
+enum Type {
+  Payout = "Payout",
+  Reservation = "Reservation",
+  Adjustment = "Adjustment",
+  ResolutionPayout = "Resolution Payout",
+}
 
 type AirbnbRow = {
   Date: Date;
-  Type: string;
+  "Arriving by date": Date;
+  Type: Type;
   "Confirmation Code": string;
+  "Booking date": Date;
   "Start Date": Date;
-  Nights: Number;
+  "End date": Date;
+  Nights: number;
   Guest: string;
   Listing: string;
   Details: string;
-  Reference: string;
+  "Reference code": string;
   Currency: string;
   Amount: number;
   "Paid Out": number;
-  "Host Fee": number;
-  "Cleaning Fee": number;
+  "Service fee": number;
+  "Fast pay fee": number;
+  "Cleaning fee": number;
   "Gross Earnings": number;
+  "Occupancy taxes": number;
+  "Earnings year": number;
 };
 
 type OdooRow = {
@@ -54,15 +66,22 @@ export async function convertAirbnbCsvToOdooFormat(
 
   const readStream = fs.createReadStream(inputFileCsv);
 
-  csv.parseStream(readStream, { ignoreEmpty: true, headers: true })
+  csv
+    .parseStream(readStream, { ignoreEmpty: true, headers: true })
     .on("error", (error: Error) => console.error(error))
     .on("data", (row: AirbnbRow): void => {
+      if (row.Type != Type.Reservation) {
+        return;
+      }
       const newOdooRows: OdooRow[] = [
         {
           /*
            * AIRBNB RENTAL
            */
-          id: row["Confirmation Code"]+"_"+ formatDate(new Date(row.Date), "yyyy-MM-dd"),
+          id:
+            row["Confirmation Code"] +
+            "_" +
+            formatDate(new Date(row.Date), "yyyy-MM-dd"),
           name: null,
           partner_id: "Airbnb",
           invoice_date: formatDate(new Date(row.Date), "yyyy-MM-dd"),
@@ -74,9 +93,9 @@ export async function convertAirbnbCsvToOdooFormat(
           "invoice_line_ids/quantity": 1,
           "invoice_line_ids/product_uom_id": "Unit(s)",
           "invoice_line_ids/price_unit":
-            (Number(row.Amount) +
-              Number(row["Host Fee"]) -
-              Number(row["Cleaning Fee"])),
+            Number(row.Amount) +
+            Number(row["Service fee"]) -
+            Number(row["Cleaning fee"]),
           "invoice_line_ids/tax_ids": "No VAT (Sales)",
           Listing: row.Listing,
           Currency: row.Currency,
@@ -96,7 +115,7 @@ export async function convertAirbnbCsvToOdooFormat(
           "invoice_line_ids/account_id": "210000 Hosting Fee",
           "invoice_line_ids/quantity": 1,
           "invoice_line_ids/product_uom_id": "Unit(s)",
-          "invoice_line_ids/price_unit": Number(row["Host Fee"] * -1),
+          "invoice_line_ids/price_unit": Number(row["Service fee"] * -1),
           "invoice_line_ids/tax_ids": "No VAT (Sales)",
           Listing: null,
           Currency: null,
@@ -116,7 +135,7 @@ export async function convertAirbnbCsvToOdooFormat(
           "invoice_line_ids/account_id": "200005 Cleaning Services Income",
           "invoice_line_ids/quantity": 1,
           "invoice_line_ids/product_uom_id": "Unit(s)",
-          "invoice_line_ids/price_unit": Number(row["Cleaning Fee"]),
+          "invoice_line_ids/price_unit": Number(row["Cleaning fee"]),
           "invoice_line_ids/tax_ids": "No VAT (Sales)",
           Listing: null,
           Currency: null,
@@ -134,11 +153,14 @@ export async function convertAirbnbCsvToOdooFormat(
         const filename = key.replace(/ /g, "_") + ".csv";
         const value = list[key];
 
-        csv.writeToPath(outputFolder + "/" + filename, value, {
-          headers: true,
-        })
+        csv
+          .writeToPath(outputFolder + "/" + filename, value, {
+            headers: true,
+          })
           .on("error", (error: Error) => console.error(error))
-          .on("finish", () => console.info(`${chalk.blue('Created:')} ${filename}`))
+          .on("finish", () =>
+            console.info(`${chalk.blue("Created:")} ${filename}`),
+          );
       });
     });
 }
