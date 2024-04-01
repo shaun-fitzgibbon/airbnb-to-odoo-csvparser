@@ -2,12 +2,10 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=yarn
 
 .DS_Store
+node_modules/
 
 ### yarn ###
 # https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
-
-node_modules/
-
 .yarn/*
 !.yarn/releases
 !.yarn/patches
@@ -22,7 +20,10 @@ node_modules/
 # and uncomment the following lines
 .pnp.*
 
+# Build folder 
 dist/
-data/output
+
+# Default Data folder 
+data
 
 # End of https://www.toptal.com/developers/gitignore/api/yarn
